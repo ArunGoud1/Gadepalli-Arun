@@ -18,18 +18,18 @@
   --white-color: #fff;
   --disabled-color: #fff3;
 }
-
+/* --- Ensure scroll track availability --- */
 html {
   font-size: 62.5%;
-  overflow-x: hidden;
+  overflow: hidden; /* Prevents global page shifting or window swiping */
 }
 
 body {
   color: var(--white-color);
   background: var(--bg-color);
-  overflow-x: hidden;
+  overflow: hidden; /* Removes the double scrollbar footprint entirely */
+  min-height: 100vh;
 }
-
 /* ========== HEADER & NAVBAR ========== */
 header {
   position: fixed;
@@ -47,8 +47,8 @@ header {
 }
 
 header.active {
-  animation: show-header 1.5s linear forwards;
-  animation-delay: 1.2s; 
+  animation: show-header 0.2s linear forwards;
+  animation-delay: 0.2s; 
 }
 
 @keyframes show-header {
@@ -69,7 +69,7 @@ nav a {
   color: var(--white-color);
   font-weight: 500;
   margin-left: 3.5rem;
-  transition: .5s;
+  transition: .2s;
 }
 
 nav a:hover,
@@ -120,33 +120,28 @@ nav a.active {
 }
 
 /* ========== GLOBAL SECTIONS STRUCTURAL FIX ========== */
+/* ========== SMOOTH SECTION TRANSITIONS ========== */
 section {
-  min-height: 100vh;
-  width: 100%;
-  padding: 12rem 9% 4rem;
-  position: absolute;
+  position: fixed; /* Lock sections to the screen bounds */
   top: 0;
   left: 0;
-  visibility: hidden;
+  min-height: 100vh;
+  width: 100%;
+  padding: 10rem 9% 2rem;
+  background: var(--bg-color);
+  visibility: hidden; /* Hide inactive pages from stacking */
   opacity: 0;
-  overflow-y: auto;
   overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto; /* Allow scrolling ONLY internally within a section if content overflows */
+  transition: opacity 0.6s ease, visibility 0.6s ease;
 }
 
+/* Activate only the current active tab section */
 section.active {
-   animation: show-content .4s linear forwards;
-   animation-delay: 0.6s;
+  visibility: visible;
+  opacity: 1;
+  z-index: 1;
 }
-
-@keyframes show-content {
-  100% {
-    visibility: visible;
-    opacity: 1;
-  }
-}
-
 /* ========== HOME SECTION ========== */
 .home {
   display: flex;
@@ -982,6 +977,7 @@ section.active {
 }
 
 /* Certificate Modal layout configuration */
+/* Certificate Modal layout configuration */
 .modal {
   display: none; 
   position: fixed;
@@ -991,30 +987,51 @@ section.active {
   background-color: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(5px);
   overflow-y: auto;
-  padding: 4rem 2rem;
+  padding: 0; /* Clear container padding to stop pushing absolute elements out */
 }
 
 .modal-content {
   background-color: var(--second-bg-color);
-  margin: 2rem auto;
-  padding: 2.5rem;
+  margin: 8rem auto; /* Clean uniform spacing from the top screen edge */
+  padding: 4rem 2.5rem 2.5rem; /* Roomy top padding so text never overlaps the X button */
   border: 3px solid var(--main-color);
   border-radius: 1.5rem;
-  width: 100%;
+  width: 90%; 
   max-width: 550px;
   text-align: center;
-  position: relative;
+  position: relative; /* Essential: anchors the X button precisely inside this card frame */
 }
 
 .close-modal {
   position: absolute;
-  top: 1.5rem; right: 2rem;
-  color: var(--white-color);
-  font-size: 3.5rem;
+  top: 2rem; /* Clean alignment inside the upper right corner */
+  right: 2rem;
+  width: 4rem;
+  height: 4rem;
+  background: var(--second-bg-color);
+  border: .2rem solid var(--main-color);
+  border-radius: 50%;
+  font-size: 2.5rem;
+  color: var(--main-color);
   cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: .5s ease;
+  z-index: 1000;
 }
 
-.close-modal:hover { color: var(--main-color); }
+/* --- HOVER EFFECT --- */
+.close-modal:hover {
+  background: var(--main-color);
+  color: var(--second-bg-color);
+  box-shadow: 0 0 1rem var(--main-color);
+}
+
+/* --- PREVENTS BOXICON FROM BREAKING CLICK TARGETS --- */
+.close-modal i {
+  pointer-events: none; 
+}
 
 .cert-img {
   width: 100%;
@@ -1049,7 +1066,7 @@ section.active {
     background: var(--bg-color);
     border-top: .1rem solid rgba(255,255,255,0.1);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,0.2);
-    transition: .4s ease;
+    transition: .2s ease;
   }
   
   nav.active { left: 0; }
@@ -1229,7 +1246,7 @@ section.active {
 
 /* State Transformations via Class Additions */
 .logoutButton.clicked .button-text {
-  opacity: 0;
+  opacity: 0.6;
 }
 
 .logoutButton.clicked .door,
@@ -1240,7 +1257,6 @@ section.active {
 .logoutButton.clicked .door {
   transform: rotateY(35deg);
 }
-
 .logoutButton.door-slammed .door {
   transform: none;
   transition: transform 100ms ease-in 250ms;
@@ -1255,32 +1271,12 @@ section.active {
 }
 
 .logoutButton.falling .figure {
-  animation: spin 800ms infinite linear;
-  bottom: -100px;
+  animation: spin 600ms infinite linear;
+  bottom: -1080px;
   opacity: 0;
+  right: 1px;
   transition: transform calc(var(--figure-duration) * 1ms) linear, 
-              bottom calc(var(--figure-duration) * 1ms) cubic-bezier(0.7, 0.1, 0.5, 0) 60ms, 
+              bottom calc(var(--figure-duration) * 1ms) cubic-bezier(0.7, 0.1, 1, 1) 100ms, 
               opacity calc(var(--figure-duration) * 0.25ms) linear calc(var(--figure-duration) * 0.75ms);
+  z-index: 0.5;
 }
-
-/* Limb Joint Origin Rotations */
-.arm1, .wrist1, .arm2, .wrist2, .leg1, .calf1, .leg2, .calf2 {
-  transition: transform calc(var(--walking-duration) * 1ms) ease-in-out;
-}
-
-.arm1 { transform: var(--transform-arm1); transform-origin: 52% 45%; }
-.wrist1 { transform: var(--transform-wrist1); transform-origin: 59% 55%; }
-.arm2 { transform: var(--transform-arm2); transform-origin: 47% 43%; }
-.wrist2 { transform: var(--transform-wrist2); transform-origin: 35% 47%; }
-.leg1 { transform: var(--transform-leg1); transform-origin: 47% 64.5%; }
-.calf1 { transform: var(--transform-calf1); transform-origin: 55.5% 71.5%; }
-.leg2 { transform: var(--transform-leg2); transform-origin: 43% 63%; }
-.calf2 { transform: var(--transform-calf2); transform-origin: 41.5% 73%; }
-
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(359deg); } }
-@keyframes shake { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
-@keyframes flash { 0% { opacity: 0.7; } 100% { opacity: 0; } }
-
-
-
-

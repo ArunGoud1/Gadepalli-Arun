@@ -13,13 +13,13 @@ const activePage = () => {
     barsBox.classList.remove('active');
     header.classList.remove('active');
 
+    // Syncing the entry bars with the 600ms CSS section fade
     setTimeout(() => {
         barsBox.classList.add('active');
         header.classList.add('active');
-    }, 100);
+    }, 150); 
 };
 
-/* --- 2. VISITOR ENTRY LOGIC --- */
 /* --- 2. VISITOR ENTRY LOGIC WITH ANIMATED ENTRY BUTTON PIPELINE --- */
 const visitorModal = document.getElementById('visitor-modal');
 const visitorForm = document.getElementById('visitor-form');
@@ -82,7 +82,6 @@ if (!sessionStorage.getItem('visitorEntered')) {
     if (visitorModal) visitorModal.style.display = 'none';
     initSite();
 }
-
 if (visitorForm) {
     visitorForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -95,9 +94,16 @@ if (visitorForm) {
         formData.append('subject', 'VISITOR_LOG');
         formData.append('message', 'User accessed the home page');
 
-        // Prevent button clicks and start the interactive timeline sequence
+        // Prevent button clicks and start visual micro-animations
         exploreBtn.style.pointerEvents = 'none';
         exploreBtn.classList.add('clicked');
+        
+        // Dynamically change the button text to "Explore" on click
+        const btnText = exploreBtn.querySelector('.button-text');
+        if (btnText) {
+            btnText.textContent = 'Wait a Sec..';
+        }
+
         assignAnimationState('walking1');
 
         setTimeout(() => {
@@ -113,27 +119,29 @@ if (visitorForm) {
 
               setTimeout(() => {
                 assignAnimationState('falling3');
+              }, 90);
+            }, 150);
+          }, 200);
+        }, 60);
 
-                // Send the network payload as the runner disappears down below
-                fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
-                .finally(() => {
-                    sessionStorage.setItem('visitorEntered', 'true');
-                    
-                    // Fade out modal box smoothly
-                    visitorModal.style.transition = 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                    visitorModal.style.opacity = '0';
-                    
-                    setTimeout(() => {
-                      visitorModal.style.display = 'none';
-                      document.body.style.overflow = 'auto';
-                      initSite();
-                    }, 400);
-                });
-
-              }, 300);
-            }, 400);
-          }, 400);
-        }, 100);
+        // Open main page immediately after falling completes (500ms)
+        setTimeout(() => {
+            fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' })
+            .finally(() => {
+                sessionStorage.setItem('visitorEntered', 'true');
+                
+                // Fade out modal box smoothly
+                visitorModal.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+                visitorModal.style.opacity = '0';
+                
+                // Clean up display after opacity transition finishes
+                setTimeout(() => {
+                  visitorModal.style.display = 'none';
+                  document.body.style.overflow = 'auto';
+                  initSite();
+                }, 200);
+            });
+        }, 500);
     });
 }
 
@@ -225,9 +233,10 @@ if (contactForm) {
         });
     });
 }
-
-/* --- 7. MISC (CERTIFICATES & MENU) --- */
+/* --- 7. CERTIFICATE MODAL --- */
 const modal = document.getElementById("cert-modal");
+
+// Open modal when clicking a certificate card
 document.querySelectorAll(".cert-clickable").forEach(card => {
     card.addEventListener('click', () => {
         document.getElementById("modal-img").src = card.getAttribute("data-cert");
@@ -240,6 +249,8 @@ document.querySelectorAll(".cert-clickable").forEach(card => {
 });
 
 const closeModalElement = document.querySelector(".close-modal");
+
+// 1. Close modal when clicking the "X" button
 if (closeModalElement) {
     closeModalElement.onclick = () => {
         if (modal) modal.style.display = "none";
@@ -247,15 +258,26 @@ if (closeModalElement) {
     };
 }
 
-// Fixed Mobile Hamburger Action Layout
+// 2. Close modal when clicking OUTSIDE the content box (on the dark backdrop overlay)
+if (modal) {
+    modal.addEventListener("click", function(e) {
+        // Checks if the click was directly on the background wrapper ID ("cert-modal")
+        if (e.target.id === "cert-modal") {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+    });
+}
+
+// Mobile Hamburger Menu Action Layout
 if (menuIcon) {
     menuIcon.onclick = () => {
         if (navMenu) navMenu.classList.toggle('active');
         menuIcon.classList.toggle('bx-x');
     };
 }
-
 /* --- 8. EXPERTISE POPUPS --- */
+// 1. Data Analyst Popup
 const popup = document.getElementById("service-popup");
 const openBox = document.getElementById("data-analyst-box");
 const closeBtn = document.querySelector(".close-popup");
@@ -266,15 +288,15 @@ if (openBox && popup) {
         document.body.style.overflow = "hidden";
     });
 }
-
 if (closeBtn && popup) {
     closeBtn.addEventListener("click", function(e) {
-        e.stopPropagation(); // Avoid triggering unexpected parent triggers
+        e.stopPropagation(); 
         popup.style.display = "none";
         document.body.style.overflow = "auto";
     });
 }
 
+// 2. Web Development Popup
 const webPopup = document.getElementById("web-popup");
 const webBox = document.getElementById("web-dev-box");
 const closeWebBtn = document.querySelector(".close-web-popup");
@@ -285,7 +307,6 @@ if (webBox && webPopup) {
         document.body.style.overflow = "hidden";
     });
 }
-
 if (closeWebBtn && webPopup) {
     closeWebBtn.addEventListener("click", function(e) {
         e.stopPropagation();
@@ -294,18 +315,61 @@ if (closeWebBtn && webPopup) {
     });
 }
 
-// Universal Overlay Window Layer Click Handler
+// 3. Python Fullstack Popup
+const pythonPopup = document.getElementById("python-popup");
+const pythonBox = document.getElementById("python-box"); 
+const closePython = document.querySelector(".close-python-popup");
+
+if (pythonBox && pythonPopup) {
+    pythonBox.addEventListener("click", function() {
+        pythonPopup.style.display = "block";
+        document.body.style.overflow = "hidden";
+    });
+}
+if (closePython && pythonPopup) {
+    closePython.addEventListener("click", function(e) {
+        e.stopPropagation();
+        pythonPopup.style.display = "none";
+        document.body.style.overflow = "auto";
+    });
+}
+
+// 4. Trader Popup
+const traderPopup = document.getElementById("trader-popup");
+const traderBox = document.getElementById("trader-box");
+const closeTraderBtn = document.querySelector(".close-trader-popup");
+
+if (traderBox && traderPopup) {
+    traderBox.addEventListener("click", function() {
+        traderPopup.style.display = "block";
+        document.body.style.overflow = "hidden";
+    });
+}
+if (closeTraderBtn && traderPopup) {
+    closeTraderBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        traderPopup.style.display = "none";
+        document.body.style.overflow = "auto";
+    });
+}
+
+// Universal Global Window Click Event for Outside Clicks
 window.addEventListener("click", function(e) {
-    if (e.target === popup) {
+    // Check if the user clicked DIRECTLY on the background overlay frame ID
+    if (e.target.id === "service-popup") {
         popup.style.display = "none";
         document.body.style.overflow = "auto";
     }
-    if (e.target === webPopup) {
+    if (e.target.id === "web-popup") {
         webPopup.style.display = "none";
         document.body.style.overflow = "auto";
     }
-    if (e.target === modal) {
-        modal.style.display = "none";
+    if (e.target.id === "python-popup") {
+        pythonPopup.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+    if (e.target.id === "trader-popup") {
+        traderPopup.style.display = "none";
         document.body.style.overflow = "auto";
     }
 });
@@ -329,20 +393,3 @@ if (window.gsap) {
 }
 
 
-
-
-/* --- 9. FOOTER LINKS INTEGRATION SYSTEM --- */
-document.querySelectorAll('.footer-nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetIndex = parseInt(link.getAttribute('data-index'));
-        
-        if (!isNaN(targetIndex) && navLinks[targetIndex]) {
-            // Trigger a simulated click on the primary header navigation element
-            navLinks[targetIndex].click();
-            
-            // Instantly bring window back to header layout viewport level smoothly
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-});
